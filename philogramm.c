@@ -172,20 +172,19 @@ void process_line(char *line, Philosopher philos[], int *philo_count) {
 
 
 void parse_options(int argc, char **argv) {
-    // Print legend, example bar, options, and example usage if -h argument is present
-    if (argc > 1 && strcmp(argv[1], "-h") == 0) {
-        print_help_message();
-        exit(0);
-    }
-    // Check for resolution argument
-    if (argc > 1) {
-        int arg_res = atoi(argv[1]);
-        if (arg_res > 0) RESOLUTION = arg_res;
-    }
-    // Check for ignore short actions flag
     for (int i = 1; i < argc; i++) {
-        if (strcmp(argv[i], "-i") == 0) {
+        if (strcmp(argv[i], "-h") == 0) {
+            print_help_message();
+            exit(0);
+        } else if (strcmp(argv[i], "-i") == 0) {
             IGNORE_SHORT_ACTIONS = 1;
+        } else {
+            // Check if argument is a positive integer (resolution)
+            char *endptr;
+            long val = strtol(argv[i], &endptr, 10);
+            if (*endptr == '\0' && val > 0) {
+                RESOLUTION = (int)val;
+            }
         }
     }
 }
