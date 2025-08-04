@@ -170,15 +170,12 @@ void process_line(char *line, Philosopher philos[], int *philo_count) {
 }
 
 
-int main(int argc, char **argv) {
-    Philosopher philos[MAX_PHILOS];
-    int philo_count = 0;
-    char line[MAX_LINE];
+
+void parse_options(int argc, char **argv) {
     // Print legend, example bar, options, and example usage if -h argument is present
     if (argc > 1 && strcmp(argv[1], "-h") == 0) {
-        // Legend with pointer (aligned)
         print_help_message();
-        return 0;
+        exit(0);
     }
     // Check for resolution argument
     if (argc > 1) {
@@ -191,6 +188,13 @@ int main(int argc, char **argv) {
             IGNORE_SHORT_ACTIONS = 1;
         }
     }
+}
+
+int main(int argc, char **argv) {
+    Philosopher philos[MAX_PHILOS];
+    int philo_count = 0;
+    char line[MAX_LINE];
+    parse_options(argc, argv);
     // Exit if no input is being piped
     if (isatty(fileno(stdin))) {
         fprintf(stderr, "No input detected. Please pipe philosopher logs to visualize.\n");
