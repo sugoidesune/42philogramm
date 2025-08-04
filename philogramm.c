@@ -11,7 +11,8 @@
 #include "philogramm.h"
 
 int RESOLUTION = 10;
-int IGNORE_SHORT_ACTIONS = 0;
+bool IGNORE_SHORT_ACTIONS = false;
+bool VISUALIZE_FORKS = false;
 
 Philosopher* find_or_create_philo(Philosopher philos[], int *count, int id) {
     for (int i = 0; i < *count; i++) {
@@ -177,7 +178,7 @@ void parse_options(int argc, char **argv) {
             print_help_message();
             exit(0);
         } else if (strcmp(argv[i], "-i") == 0) {
-            IGNORE_SHORT_ACTIONS = 1;
+            IGNORE_SHORT_ACTIONS = true;
         } else {
             // Check if argument is a positive integer (resolution)
             char *endptr;
