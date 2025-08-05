@@ -6,7 +6,7 @@ void print_fork_log(Philosopher *p) {
     //printf("🍴 ");
     for (int i = 0; i < p->fork_count; i++) {
         char buf[16];
-        int n = snprintf(buf, sizeof(buf), "%dms", p->fork_times[i]);
+        //int n = snprintf(buf, sizeof(buf), "%dms", p->fork_times[i]);
         // /int pad = DEATH_MSG_WIDTH - n;
         // Use a fixed color block, similar to death log
         printf("%s  %s  %s", "\033[48;5;244;30m", buf, COLOR_RESET); // grey bg, black text

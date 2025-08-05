@@ -246,6 +246,58 @@ int main(int argc, char **argv) {
             }
         }
     }
+    // Find the longest chart row (in chars)
+    int max_bar_chars = 0;
+    for (int i = 0; i < philo_count; i++) {
+        Philosopher *p = &philos[i];
+        int row_chars = 0;
+        int first_action_start = (p->action_count > 0) ? p->actions[0].start : 0;
+        row_chars += first_action_start / RESOLUTION;
+        for (int j = 0; j < p->action_count; j++) {
+            int duration = (p->actions[j].end > p->actions[j].start) ? (p->actions[j].end - p->actions[j].start) : 0;
+            int rounded_duration = ((duration + RESOLUTION / 2) / RESOLUTION) * RESOLUTION;
+            int len = 0;
+            char duration_str[16];
+            snprintf(duration_str, sizeof(duration_str), "%dms", duration);
+            len = strlen(duration_str);
+            int short_bar_limit = RESOLUTION * len;
+            if (duration <= short_bar_limit) {
+                int max_chars = (rounded_duration / RESOLUTION);
+                if (max_chars < 1) max_chars = 1;
+                if (max_chars > len) max_chars = len;
+                row_chars += max_chars;
+            } else {
+                int bar_width = rounded_duration / RESOLUTION;
+                if (bar_width < len) bar_width = len;
+                row_chars += bar_width;
+            }
+        }
+        if (row_chars > max_bar_chars) max_bar_chars = row_chars;
+    }
+    max_bar_chars += 10; // Account for scale labels
+    // Print scale at the top, aligned to chart
+    printf("     "); // align with chart prefix
+    for (int i = 0; i < max_bar_chars; i++) {
+        int ms = i * RESOLUTION;
+        if (i == 0 || i == max_bar_chars - 1 || i % 10 == 0) {
+            printf("%-4d", ms);
+            i += 3; // skip next 3 chars for label width
+        } else {
+            printf(" ");
+        }
+    }
+    printf("\n    ▕");
+    //Decrement max bar chars  to remove the last "⠂" after the last number.
+    max_bar_chars--;
+    for (int i = 0; i < max_bar_chars; i++) {
+        if(i % 10 == 0)
+            printf("▏");
+        else if (i % 10 == 9)
+            printf("▕");
+        else 
+            printf("⠂");
+    }
+    printf("\n");
     // Print charts in sorted order
     for (int i = 0; i < philo_count; i++) {
         print_chart(&philos[i]);

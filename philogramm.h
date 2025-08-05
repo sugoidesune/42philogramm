@@ -51,4 +51,5 @@ typedef struct {
 
 void print_help_message(void);
 const char* action_color(ActionType type);
+void print_fork_log(Philosopher *p);
 #endif
