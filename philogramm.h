@@ -20,6 +20,8 @@
 extern int RESOLUTION;
 extern bool IGNORE_SHORT_ACTIONS;
 extern bool LOG_FORKS;
+extern bool SHOW_SCALE;
+extern bool SHOW_EATCOUNT;
 
 // ANSI color codes
 #define COLOR_EAT     "\033[1;31m"

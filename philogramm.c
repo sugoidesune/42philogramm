@@ -3,7 +3,11 @@
 
 
 #include "philogramm.h"
-
+int RESOLUTION = 10;
+bool IGNORE_SHORT_ACTIONS = false;
+bool LOG_FORKS = false;
+bool SHOW_SCALE = true; 
+bool SHOW_EATCOUNT = true; 
 
 int calc_eatcount_spacing(Philosopher *p, int max_bar_chars, int resolution) {
     int first_action_start = (p->action_count > 0) ? p->actions[0].start : 0;
@@ -34,9 +38,7 @@ int calc_eatcount_spacing(Philosopher *p, int max_bar_chars, int resolution) {
     return spacing;
 }
 
-int RESOLUTION = 10;
-bool IGNORE_SHORT_ACTIONS = false;
-bool LOG_FORKS = false;
+
 
 
 Philosopher* find_or_create_philo(Philosopher philos[], int *count, int id) {
@@ -187,9 +189,13 @@ void print_chart(Philosopher *p, int max_bar_chars) {
         printf("%s%s%s", bg_color, bar, COLOR_RESET);
     }
     // Calculate spacing for eat count block
-    int spacing = calc_eatcount_spacing(p, max_bar_chars, RESOLUTION);
-    for (int s = 0; s < spacing; s++) putchar(' ');
-    printf("│ ate %d times\n", p->eat_count);
+    if (SHOW_EATCOUNT) {
+        int spacing = calc_eatcount_spacing(p, max_bar_chars, RESOLUTION);
+        for (int s = 0; s < spacing; s++) printf("\033[38;5;240m┈\033[0m");
+        printf("┤ ate %d times %s│\n", p->eat_count, p->eat_count > 9 ? "" : " ");
+    } else {
+        putchar('\n');
+    }
 }
 
 void print_death_msg(int ms) {
@@ -239,6 +245,10 @@ void parse_options(int argc, char **argv) {
             IGNORE_SHORT_ACTIONS = true;
         } else if (strcmp(argv[i], "-f") == 0) {
             LOG_FORKS = true;
+        } else if (strcmp(argv[i], "-s") == 0) {
+            SHOW_SCALE = false;
+        } else if (strcmp(argv[i], "-c") == 0) {
+            SHOW_EATCOUNT = false;
         } else {
             // Check if argument is a positive integer (resolution)
             char *endptr;
@@ -278,7 +288,14 @@ int main(int argc, char **argv) {
         }
     }
     int max_bar_chars = calc_max_bar_chars(philos, philo_count, RESOLUTION);
-    print_scale(max_bar_chars, RESOLUTION);
+        if (SHOW_SCALE) {
+            print_scale(max_bar_chars, RESOLUTION);
+        } else if (SHOW_EATCOUNT) {
+            // Print top border for 'ate X times' messages if scale is off
+            printf("    "); // align with chart prefix
+            for (int i = 0; i < max_bar_chars - 1; i++) putchar(' ');
+            printf("    ╭──────────────╮\n");
+        }
     // Print charts in sorted order
     for (int i = 0; i < philo_count; i++) {
         print_chart(&philos[i], max_bar_chars);
@@ -286,6 +303,12 @@ int main(int argc, char **argv) {
             print_fork_log(&philos[i]);
         }
     }
+        // Print bottom border for 'ate X times' messages if enabled
+        if (SHOW_EATCOUNT) {
+            printf("    "); // align with chart prefix
+            for (int i = 0; i < max_bar_chars - 1; i++) putchar(' ');
+            printf("    ╰──────────────╯\n");
+        }
     // Print death log if any philosopher died
     bool any_died = false;
     for (int i = 0; i < philo_count; i++) {
@@ -370,5 +393,8 @@ void print_scale(int max_bar_chars, int resolution) {
         else
             printf("⠄");
     }
-    printf("\n");
+    if(SHOW_EATCOUNT)
+        printf("   ╭──────────────╮\n");
+    else
+        printf("\n");
 }
