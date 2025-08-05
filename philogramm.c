@@ -1,18 +1,12 @@
 // Helper for philosopher label background
-
-
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdbool.h>
-// include for isatty
-#include <unistd.h>
 #include "philogramm.h"
 
 int RESOLUTION = 10;
 bool IGNORE_SHORT_ACTIONS = false;
 bool VISUALIZE_FORKS = false;
+
+#define DEATH_MSG_WIDTH 12
+#define MEAL_MSG_WIDTH 8
 
 Philosopher* find_or_create_philo(Philosopher philos[], int *count, int id) {
     for (int i = 0; i < *count; i++) {
@@ -23,6 +17,8 @@ Philosopher* find_or_create_philo(Philosopher philos[], int *count, int id) {
     p->action_count = 0;
     p->last_time = -1;
     p->last_type = NONE;
+    p->died_time = -1;
+    p->last_eat_time = -1;
     (*count)++;
     return p;
 }
@@ -53,6 +49,10 @@ const char* action_color2(ActionType type) {
 }
 
 void add_action(Philosopher *p, int time, ActionType type) {
+    // Track last eat time for log window
+    if (type == EAT) {
+        p->last_eat_time = time;
+    }
     if (type == NONE) return;
     if (p->last_type != NONE && p->last_type != type) {
         // End previous action
@@ -160,6 +160,22 @@ void print_chart(Philosopher *p) {
     printf("\n");
 }
 
+void print_death_msg(int ms) {
+    char buf[32];
+    int n = snprintf(buf, sizeof(buf), "🕱 %dms", ms);
+    int pad = DEATH_MSG_WIDTH - n;
+    printf("%s  %s  %s", action_color(DEAD), buf, COLOR_RESET);
+    for (int i = 0; i < pad; i++) putchar(' ');
+}
+
+void print_meal_msg(int ms) {
+    char buf[32];
+    int n = snprintf(buf, sizeof(buf), "%dms", ms);
+    int pad = MEAL_MSG_WIDTH - n;
+    printf("%s  %s  %s", action_color(EAT), buf, COLOR_RESET);
+    for (int i = 0; i < pad; i++) putchar(' ');
+}
+
 void process_line(char *line, Philosopher philos[], int *philo_count) {
     int time, id;
     char action_str[MAX_LINE];
@@ -167,6 +183,10 @@ void process_line(char *line, Philosopher philos[], int *philo_count) {
         ActionType type = parse_action(action_str);
         Philosopher *p = find_or_create_philo(philos, philo_count, id);
         add_action(p, time, type);
+            // Track death time for log window
+            if (type == DEAD) {
+                p->died_time = time;
+            }
     }
 }
 
@@ -179,6 +199,8 @@ void parse_options(int argc, char **argv) {
             exit(0);
         } else if (strcmp(argv[i], "-i") == 0) {
             IGNORE_SHORT_ACTIONS = true;
+            } else if (strcmp(argv[i], "-f") == 0) {
+                VISUALIZE_FORKS = true;
         } else {
             // Check if argument is a positive integer (resolution)
             char *endptr;
@@ -220,6 +242,33 @@ int main(int argc, char **argv) {
     // Print charts in sorted order
     for (int i = 0; i < philo_count; i++) {
         print_chart(&philos[i]);
+    }
+    // Print death log if any philosopher died
+    bool any_died = false;
+    for (int i = 0; i < philo_count; i++) {
+        Philosopher *p = &philos[i];
+        if (p->last_type == DEAD && p->died_time != -1) {
+            any_died = true;
+            break;
+        }
+    }
+    if (any_died) {
+        printf("\n  ┌───────────────────────── Death Log ─────────────────────────┐\n");
+        for (int i = 0; i < philo_count; i++) {
+            Philosopher *p = &philos[i];
+            if (p->last_type == DEAD && p->died_time != -1) {
+                printf("  │ %s%2d%s  Died at  ", "\033[1m", p->id, "\033[0m");
+                print_death_msg(p->died_time);
+                printf("    │   Last ate at  ");
+                if (p->last_eat_time != -1) {
+                    print_meal_msg(p->last_eat_time);
+                } else {
+                    print_meal_msg(0);
+                }
+                printf(" │\n");
+            }
+        }
+        printf("  └─────────────────────────────────────────────────────────────┘\n");
     }
     return 0;
 }

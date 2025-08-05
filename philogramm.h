@@ -1,13 +1,20 @@
 #ifndef PHILOGRAMM_H
 #define PHILOGRAMM_H
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+// include for isatty
+#include <unistd.h>
+
 
 #define MAX_PHILOS 300
 #define MAX_ACTIONS 1000
 #define MAX_LINE 128
 
 extern int RESOLUTION;
-extern int IGNORE_SHORT_ACTIONS;
+extern bool IGNORE_SHORT_ACTIONS;
 
 // ANSI color codes
 #define COLOR_EAT     "\033[1;31m"
@@ -32,6 +39,8 @@ typedef struct {
     Action actions[MAX_ACTIONS];
     int last_time;
     ActionType last_type;
+    int died_time; // -1 if not dead
+    int last_eat_time; // -1 if never ate
 } Philosopher;
 
 void print_help_message(void);
