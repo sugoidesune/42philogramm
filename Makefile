@@ -5,7 +5,7 @@ CC ?= cc
 CFLAGS ?= -O2 -Wall -Wextra -pedantic
 LDFLAGS ?=
 TARGET ?= philogramm
-SRC := philogramm.c helpmsg.c
+SRC := philogramm.c helpmsg.c print_fork_log.c
 
 .PHONY: all build run clean format help
 

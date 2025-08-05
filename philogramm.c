@@ -3,10 +3,9 @@
 
 int RESOLUTION = 10;
 bool IGNORE_SHORT_ACTIONS = false;
-bool VISUALIZE_FORKS = false;
+bool LOG_FORKS = false;
 
-#define DEATH_MSG_WIDTH 12
-#define MEAL_MSG_WIDTH 8
+
 
 Philosopher* find_or_create_philo(Philosopher philos[], int *count, int id) {
     for (int i = 0; i < *count; i++) {
@@ -19,6 +18,8 @@ Philosopher* find_or_create_philo(Philosopher philos[], int *count, int id) {
     p->last_type = NONE;
     p->died_time = -1;
     p->last_eat_time = -1;
+    p->fork_count = 0;
+    memset(p->fork_times, 0, sizeof(p->fork_times));
     (*count)++;
     return p;
 }
@@ -187,6 +188,12 @@ void process_line(char *line, Philosopher philos[], int *philo_count) {
             if (type == DEAD) {
                 p->died_time = time;
             }
+            // Track fork pickup times if LOG_FORKS is enabled and action contains "fork"
+            if (LOG_FORKS && strstr(action_str, "fork")) {
+                if (p->fork_count < MAX_ACTIONS) {
+                    p->fork_times[p->fork_count++] = time;
+                }
+            }
     }
 }
 
@@ -199,8 +206,8 @@ void parse_options(int argc, char **argv) {
             exit(0);
         } else if (strcmp(argv[i], "-i") == 0) {
             IGNORE_SHORT_ACTIONS = true;
-            } else if (strcmp(argv[i], "-f") == 0) {
-                VISUALIZE_FORKS = true;
+        } else if (strcmp(argv[i], "-f") == 0) {
+            LOG_FORKS = true;
         } else {
             // Check if argument is a positive integer (resolution)
             char *endptr;
@@ -242,6 +249,9 @@ int main(int argc, char **argv) {
     // Print charts in sorted order
     for (int i = 0; i < philo_count; i++) {
         print_chart(&philos[i]);
+        if (LOG_FORKS) {
+            print_fork_log(&philos[i]);
+        }
     }
     // Print death log if any philosopher died
     bool any_died = false;

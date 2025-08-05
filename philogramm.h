@@ -13,8 +13,12 @@
 #define MAX_ACTIONS 1000
 #define MAX_LINE 128
 
+#define DEATH_MSG_WIDTH 12
+#define MEAL_MSG_WIDTH 8
+
 extern int RESOLUTION;
 extern bool IGNORE_SHORT_ACTIONS;
+extern bool LOG_FORKS;
 
 // ANSI color codes
 #define COLOR_EAT     "\033[1;31m"
@@ -41,6 +45,8 @@ typedef struct {
     ActionType last_type;
     int died_time; // -1 if not dead
     int last_eat_time; // -1 if never ate
+    int fork_count;
+    int fork_times[MAX_ACTIONS]; // times when forks were picked up
 } Philosopher;
 
 void print_help_message(void);
