@@ -1,10 +1,42 @@
-// Helper for philosopher label background
+// ...existing code...
+// ...existing code...
+
+
 #include "philogramm.h"
+
+
+int calc_eatcount_spacing(Philosopher *p, int max_bar_chars, int resolution) {
+    int first_action_start = (p->action_count > 0) ? p->actions[0].start : 0;
+    int row_chars = 0;
+    row_chars += first_action_start / resolution;
+    for (int j = 0; j < p->action_count; j++) {
+        int duration = (p->actions[j].end > p->actions[j].start) ? (p->actions[j].end - p->actions[j].start) : 0;
+        int rounded_duration = ((duration + resolution / 2) / resolution) * resolution;
+        int len = 0;
+        char duration_str[16];
+        snprintf(duration_str, sizeof(duration_str), "%dms", duration);
+        len = strlen(duration_str);
+        int short_bar_limit = resolution * len;
+        if (duration <= short_bar_limit) {
+            int max_chars = (rounded_duration / resolution);
+            if (max_chars < 1) max_chars = 1;
+            if (max_chars > len) max_chars = len;
+            row_chars += max_chars;
+        } else {
+            int bar_width = rounded_duration / resolution;
+            if (bar_width < len) bar_width = len;
+            row_chars += bar_width;
+        }
+    }
+    // The eatcount block should start at the same column for all rows
+    int spacing = max_bar_chars - row_chars;
+    if (spacing < 0) spacing = 0;
+    return spacing;
+}
 
 int RESOLUTION = 10;
 bool IGNORE_SHORT_ACTIONS = false;
 bool LOG_FORKS = false;
-
 
 
 Philosopher* find_or_create_philo(Philosopher philos[], int *count, int id) {
@@ -20,6 +52,7 @@ Philosopher* find_or_create_philo(Philosopher philos[], int *count, int id) {
     p->last_eat_time = -1;
     p->fork_count = 0;
     memset(p->fork_times, 0, sizeof(p->fork_times));
+    p->eat_count = 0;
     (*count)++;
     return p;
 }
@@ -53,6 +86,7 @@ void add_action(Philosopher *p, int time, ActionType type) {
     // Track last eat time for log window
     if (type == EAT) {
         p->last_eat_time = time;
+        p->eat_count++;
     }
     if (type == NONE) return;
     if (p->last_type != NONE && p->last_type != type) {
@@ -80,7 +114,7 @@ void finalize_actions(Philosopher *p) {
     }
 }
 
-void print_chart(Philosopher *p) {
+void print_chart(Philosopher *p, int max_bar_chars) {
     int id = p->id;
     char prefix[4] = "";
     if (id < 10)
@@ -111,29 +145,24 @@ void print_chart(Philosopher *p) {
     for (int i = 0; i < p->action_count; i++) {
         Action *a = &p->actions[i];
         int duration = (a->end > a->start) ? (a->end - a->start) : 0;
-        // Use rounding for bar width calculation
-        int rounded_duration = ((duration + RESOLUTION / 2) / RESOLUTION) * RESOLUTION;
+        // ...existing code...
         if (IGNORE_SHORT_ACTIONS && duration > 0 && duration <= 3) {
             continue;
         }
         if (a->type == DEAD) {
-            // Print timestamp before skull emoji
             int died_time = a->start;
             printf("%s%4dms 🕱  %s", action_color(DEAD), died_time, COLOR_RESET);
             continue;
         }
         if (duration == 0) {
-            // Only print X if this is the last action and it is not DEAD
-            if (i == last_action_idx && last_is_zero) {
-                printf("%s   %s", action_color(last_type), COLOR_RESET);
-            }
+            printf("%s   %s", action_color(a->type), COLOR_RESET);
             continue;
         }
         char duration_str[16];
         snprintf(duration_str, sizeof(duration_str), "%dms", duration);
         int len = strlen(duration_str);
-        // Special handling for short durations
-        int short_bar_limit = RESOLUTION * strlen(duration_str); // max chars based on ms per hash
+        int short_bar_limit = RESOLUTION * strlen(duration_str);
+        int rounded_duration = ((duration + RESOLUTION / 2) / RESOLUTION) * RESOLUTION;
         if (duration <= short_bar_limit) {
             int max_chars = (rounded_duration / RESOLUTION);
             if (max_chars < 1) max_chars = 1;
@@ -144,7 +173,6 @@ void print_chart(Philosopher *p) {
             printf("%s", COLOR_RESET);
             continue;
         }
-        // Normal bar for longer durations
         int bar_width = rounded_duration / RESOLUTION;
         if (bar_width < len) bar_width = len;
         char bar[bar_width + 1];
@@ -158,7 +186,10 @@ void print_chart(Philosopher *p) {
         const char *bg_color = action_color(a->type);
         printf("%s%s%s", bg_color, bar, COLOR_RESET);
     }
-    printf("\n");
+    // Calculate spacing for eat count block
+    int spacing = calc_eatcount_spacing(p, max_bar_chars, RESOLUTION);
+    for (int s = 0; s < spacing; s++) putchar(' ');
+    printf("│ ate %d times\n", p->eat_count);
 }
 
 void print_death_msg(int ms) {
@@ -250,7 +281,7 @@ int main(int argc, char **argv) {
     print_scale(max_bar_chars, RESOLUTION);
     // Print charts in sorted order
     for (int i = 0; i < philo_count; i++) {
-        print_chart(&philos[i]);
+        print_chart(&philos[i], max_bar_chars);
         if (LOG_FORKS) {
             print_fork_log(&philos[i]);
         }

@@ -15,6 +15,7 @@
 
 #define DEATH_MSG_WIDTH 12
 #define MEAL_MSG_WIDTH 8
+#define EATCOUNT_BLOCK_WIDTH 16
 
 extern int RESOLUTION;
 extern bool IGNORE_SHORT_ACTIONS;
@@ -47,6 +48,7 @@ typedef struct {
     int last_eat_time; // -1 if never ate
     int fork_count;
     int fork_times[MAX_ACTIONS]; // times when forks were picked up
+    int eat_count; // number of times philosopher ate
 } Philosopher;
 
 void print_help_message(void);
@@ -54,4 +56,5 @@ const char* action_color(ActionType type);
 void print_fork_log(Philosopher *p);
 void print_scale(int max_bar_chars, int resolution);
 int calc_max_bar_chars(Philosopher philos[], int philo_count, int resolution);
+void print_chart(Philosopher *p, int max_bar_chars);
 #endif
