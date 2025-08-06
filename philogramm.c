@@ -7,7 +7,8 @@ int RESOLUTION = 10;
 bool IGNORE_SHORT_ACTIONS = false;
 bool LOG_FORKS = false;
 bool SHOW_SCALE = true; 
-bool SHOW_EATCOUNT = true; 
+bool SHOW_EATCOUNT = true;
+int MAX_BAR_CHARS = 100;
 
 int calc_eatcount_spacing(Philosopher *p, int max_bar_chars, int resolution) {
     int first_action_start = (p->action_count > 0) ? p->actions[0].start : 0;
@@ -260,84 +261,6 @@ void parse_options(int argc, char **argv) {
     }
 }
 
-int main(int argc, char **argv) {
-    Philosopher philos[MAX_PHILOS];
-    int philo_count = 0;
-    char line[MAX_LINE];
-    parse_options(argc, argv);
-    // Exit if no input is being piped
-    if (isatty(fileno(stdin))) {
-        fprintf(stderr, "No input detected. Please pipe philosopher logs to visualize.\n");
-        return 1;
-    }
-    while (fgets(line, sizeof(line), stdin)) {
-        process_line(line, philos, &philo_count);
-    }
-    // Finalize actions
-    for (int i = 0; i < philo_count; i++) {
-        finalize_actions(&philos[i]);
-    }
-    // Sort philosophers by id ascending
-    for (int i = 0; i < philo_count - 1; i++) {
-        for (int j = i + 1; j < philo_count; j++) {
-            if (philos[i].id > philos[j].id) {
-                Philosopher tmp = philos[i];
-                philos[i] = philos[j];
-                philos[j] = tmp;
-            }
-        }
-    }
-    int max_bar_chars = calc_max_bar_chars(philos, philo_count, RESOLUTION);
-        if (SHOW_SCALE) {
-            print_scale(max_bar_chars, RESOLUTION);
-        } else if (SHOW_EATCOUNT) {
-            // Print top border for 'ate X times' messages if scale is off
-            printf("    "); // align with chart prefix
-            for (int i = 0; i < max_bar_chars - 1; i++) putchar(' ');
-            printf("    ╭──────────────╮\n");
-        }
-    // Print charts in sorted order
-    for (int i = 0; i < philo_count; i++) {
-        print_chart(&philos[i], max_bar_chars);
-        if (LOG_FORKS) {
-            print_fork_log(&philos[i]);
-        }
-    }
-        // Print bottom border for 'ate X times' messages if enabled
-        if (SHOW_EATCOUNT) {
-            printf("    "); // align with chart prefix
-            for (int i = 0; i < max_bar_chars - 1; i++) putchar(' ');
-            printf("    ╰──────────────╯\n");
-        }
-    // Print death log if any philosopher died
-    bool any_died = false;
-    for (int i = 0; i < philo_count; i++) {
-        Philosopher *p = &philos[i];
-        if (p->last_type == DEAD && p->died_time != -1) {
-            any_died = true;
-            break;
-        }
-    }
-    if (any_died) {
-        printf("\n  ┌───────────────────────── Death Log ─────────────────────────┐\n");
-        for (int i = 0; i < philo_count; i++) {
-            Philosopher *p = &philos[i];
-            if (p->last_type == DEAD && p->died_time != -1) {
-                printf("  │ %s%2d%s  Died at  ", "\033[1m", p->id, "\033[0m");
-                print_death_msg(p->died_time);
-                printf("    │   Last ate at  ");
-                if (p->last_eat_time != -1) {
-                    print_meal_msg(p->last_eat_time);
-                } else {
-                    print_meal_msg(0);
-                }
-                printf(" │\n");
-            }
-        }
-        printf("  └─────────────────────────────────────────────────────────────┘\n");
-    }
-    return 0;
-}
 
 int calc_max_bar_chars(Philosopher philos[], int philo_count, int resolution) {
     int max_bar_chars = 0;
@@ -397,4 +320,84 @@ void print_scale(int max_bar_chars, int resolution) {
         printf("   ╭──────────────╮\n");
     else
         printf("\n");
+}
+
+
+int main(int argc, char **argv) {
+    Philosopher philos[MAX_PHILOS];
+    int philo_count = 0;
+    char line[MAX_LINE];
+    parse_options(argc, argv);
+    // Exit if no input is being piped
+    if (isatty(fileno(stdin))) {
+        fprintf(stderr, "No input detected. Please pipe philosopher logs to visualize.\n");
+        return 1;
+    }
+    while (fgets(line, sizeof(line), stdin)) {
+        process_line(line, philos, &philo_count);
+    }
+    // Finalize actions
+    for (int i = 0; i < philo_count; i++) {
+        finalize_actions(&philos[i]);
+    }
+    // Sort philosophers by id ascending
+    for (int i = 0; i < philo_count - 1; i++) {
+        for (int j = i + 1; j < philo_count; j++) {
+            if (philos[i].id > philos[j].id) {
+                Philosopher tmp = philos[i];
+                philos[i] = philos[j];
+                philos[j] = tmp;
+            }
+        }
+    }
+    MAX_BAR_CHARS = calc_max_bar_chars(philos, philo_count, RESOLUTION);
+        if (SHOW_SCALE) {
+            print_scale(MAX_BAR_CHARS, RESOLUTION);
+        } else if (SHOW_EATCOUNT) {
+            // Print top border for 'ate X times' messages if scale is off
+            printf("    "); // align with chart prefix
+            for (int i = 0; i < MAX_BAR_CHARS - 1; i++) putchar(' ');
+            printf("    ╭──────────────╮\n");
+        }
+    // Print charts in sorted order
+    for (int i = 0; i < philo_count; i++) {
+        print_chart(&philos[i], MAX_BAR_CHARS);
+        if (LOG_FORKS) {
+            print_fork_log(&philos[i]);
+        }
+    }
+        // Print bottom border for 'ate X times' messages if enabled
+        if (SHOW_EATCOUNT) {
+            printf("    "); // align with chart prefix
+            for (int i = 0; i < MAX_BAR_CHARS - 1; i++) putchar(' ');
+            printf("    ╰──────────────╯\n");
+        }
+    // Print death log if any philosopher died
+    bool any_died = false;
+    for (int i = 0; i < philo_count; i++) {
+        Philosopher *p = &philos[i];
+        if (p->last_type == DEAD && p->died_time != -1) {
+            any_died = true;
+            break;
+        }
+    }
+    if (any_died) {
+        printf("\n  ┌───────────────────────── Death Log ─────────────────────────┐\n");
+        for (int i = 0; i < philo_count; i++) {
+            Philosopher *p = &philos[i];
+            if (p->last_type == DEAD && p->died_time != -1) {
+                printf("  │ %s%2d%s  Died at  ", "\033[1m", p->id, "\033[0m");
+                print_death_msg(p->died_time);
+                printf("    │   Last ate at  ");
+                if (p->last_eat_time != -1) {
+                    print_meal_msg(p->last_eat_time);
+                } else {
+                    print_meal_msg(0);
+                }
+                printf(" │\n");
+            }
+        }
+        printf("  └─────────────────────────────────────────────────────────────┘\n");
+    }
+    return 0;
 }

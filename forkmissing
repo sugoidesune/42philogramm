@@ -1,0 +1,72 @@
+0 1 has taken a fork
+0 1 is eating
+0 2 is thinking
+0 3 is thinking
+0 4 is thinking
+0 5 is thinking
+100 3 has taken a fork
+100 3 has taken a fork
+100 3 is eating
+200 1 is sleeping
+200 5 has taken a fork
+200 5 has taken a fork
+200 5 is eating
+301 3 is sleeping
+301 2 has taken a fork
+301 2 has taken a fork
+301 2 is eating
+401 1 is thinking
+401 5 is sleeping
+401 4 has taken a fork
+401 4 is eating
+501 3 is thinking
+501 2 is sleeping
+501 1 has taken a fork
+501 1 has taken a fork
+501 1 is eating
+601 4 is sleeping
+601 5 is thinking
+601 5 has taken a fork
+601 3 has taken a fork
+601 3 has taken a fork
+601 3 is eating
+701 2 is thinking
+701 1 is sleeping
+701 5 has taken a fork
+701 5 is eating
+801 4 is thinking
+801 3 is sleeping
+801 2 has taken a fork
+801 2 has taken a fork
+801 2 is eating
+901 1 is thinking
+901 5 is sleeping
+901 4 has taken a fork
+901 4 has taken a fork
+901 4 is eating
+1001 3 is thinking
+1001 2 is sleeping
+1001 1 has taken a fork
+1001 1 has taken a fork
+1001 1 is eating
+1101 5 is thinking
+1101 4 is sleeping
+1101 5 has taken a fork
+1101 3 has taken a fork
+1101 3 has taken a fork
+1101 3 is eating
+1201 2 is thinking
+1201 1 ate 3 times and left the symposium.
+1201 5 has taken a fork
+1201 5 is eating
+1301 4 is thinking
+1302 3 ate 3 times and left the symposium.
+1302 2 has taken a fork
+1302 2 has taken a fork
+1302 2 is eating
+1402 5 ate 3 times and left the symposium.
+1402 4 has taken a fork
+1402 4 has taken a fork
+1402 4 is eating
+1502 2 ate 3 times and left the symposium.
+1602 4 ate 3 times and left the symposium.

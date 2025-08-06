@@ -2,17 +2,54 @@
 #include "philogramm.h"
 
 void print_fork_log(Philosopher *p) {
-    printf("     "); // align with chart
-    //printf("🍴 ");
-    for (int i = 0; i < p->fork_count; i++) {
-        char buf[16];
-        //int n = snprintf(buf, sizeof(buf), "%dms", p->fork_times[i]);
-        // /int pad = DEATH_MSG_WIDTH - n;
-        // Use a fixed color block, similar to death log
-        printf("%s  %s  %s", "\033[48;5;244;30m", buf, COLOR_RESET); // grey bg, black text
-        //for (int j = 0; j < pad; j++) putchar(' ');
-        // Add uncolored space between blocks
-        // if (i < p->fork_count - 1) putchar(' ');
+    // Print fork pickup arrows (↑) aligned to the correct time, on a new row below the chart
+    // Print chart prefix (same as print_chart)
+    int id = p->id;
+    char prefix[4] = "";
+    if (id < 10)
+        strcpy(prefix, "   ");
+    else if (id < 100)
+        strcpy(prefix, "  ");
+    printf("%s", prefix);
+    extern int RESOLUTION;
+    extern bool SHOW_EATCOUNT;
+
+    int arrow_cols[MAX_ACTIONS] = {0};
+    int arrow_count = 0;
+    for (int f = 0; f < p->fork_count; f++) {
+        int arrow_pos = p->fork_times[f] / RESOLUTION;
+        if (arrow_pos < MAX_BAR_CHARS) {
+            arrow_cols[arrow_count++] = arrow_pos;
+        }
     }
-    printf("\n");
+    int col = 0;
+    int fork_row_width = 0; // Count of characters written (arrows and spaces)
+    while (col < MAX_BAR_CHARS) {
+        int arrows_here = 0;
+        for (int a = 0; a < arrow_count; a++) {
+            if (arrow_cols[a] == col) arrows_here++;
+        }
+        for (int k = 0; k < arrows_here; k++) {
+            printf("↑");
+            fork_row_width++;
+        }
+        if (!arrows_here) {
+            printf(" ");
+            fork_row_width++;
+        }
+        col++;
+    }
+    // fork_row_width now contains the total number of characters written (arrows and spaces)
+    // Print empty eatcount borders directly after the fork arrows, on the same line
+    int extra_spaces_for_border = 0;
+    if((MAX_BAR_CHARS + 3) > fork_row_width) {
+        extra_spaces_for_border = MAX_BAR_CHARS + 3 - fork_row_width;
+        for (int i = 0; i < extra_spaces_for_border; i++) putchar(' ');
+    }
+    if (SHOW_EATCOUNT) {
+        printf(" │");
+        for (int i = 0; i < EATCOUNT_BLOCK_WIDTH - 2; i++) putchar(' ');
+        printf("│");
+    }
+    putchar('\n');
 }
