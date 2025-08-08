@@ -1,5 +1,7 @@
 # Philogramm
 
+![Color coding legend](/help/philogramm.png)
+
 **Philogramm** is a visualizer for the 42 school project "Philosophers". It reads philosopher simulation output and displays a color-coded, easy-to-read chart of each philosopher's actions, including eating, sleeping, thinking, and death, as well as fork usage.
 
 ---
@@ -23,18 +25,21 @@ Each bar shows a philosopher's actions over time, with colors indicating the act
 	┌───────────────────────── Fork Chart ──────────────────────────┐
 	│  Forks are shown as arrows between each philosopher           │
 	│  pointing to the philosopher who picked them up.              │
-	│                                                               │
+	│                     ./philogramm -f                           │
 	└───────────────────────────────────────────────────────────────┘
 ```
 
 ![Fork Example](/help/forkhelp.png)
+![Fork Example](/help/forkchart.png)
 
 ⚠️  Important: Needs 'left' or 'right' in fork print message
 ```
 601 5 has taken a fork right 
 601 3 has taken left fork 
 ```
+
 The location of "left" / "right" in the string section doesn't matter.
+
 ---
 
 ## Options
@@ -54,20 +59,27 @@ The location of "left" / "right" in the string section doesn't matter.
 
 ---
 
+
+
 ## Example Usage
 
 ```sh
 ./philo 6 400 200 200 5 | ./philogramm
 ./philo 6 400 200 200 | head -n 50 | ./philogramm
-cat philo_output | ./philogramm
+cat philo_output | ./philogramm -f
 cat philo_output | ./philogramm 20 -i
 ./philo 6 400 200 200 | ./philogramm 20 -i -s -c -f
 ```
 
+## Install
+
+```bash
+curl -o philogramm https://raw.githubusercontent.com/sugoidesune/42philogramm/master/philogramm
+
+chmod 755 philogramm
+
+./philo 6 400 200 200 5 | ./philogramm
+```
 ---
 
-## Notes
 
-- Fork chart requires fork print messages to specify 'left' or 'right'.
-- Unfinished actions are shown at the end of a philosopher's bar.
-- Colors and symbols may not display correctly on all terminals.
