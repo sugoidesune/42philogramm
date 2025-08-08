@@ -61,6 +61,13 @@ The location of "left" / "right" in the string section doesn't matter.
 
 
 
+## Install
+
+```bash
+curl -o philogramm https://raw.githubusercontent.com/sugoidesune/42philogramm/master/philogramm
+```
+---
+
 ## Example Usage
 
 ```sh
@@ -70,16 +77,3 @@ cat philo_output | ./philogramm -f
 cat philo_output | ./philogramm 20 -i
 ./philo 6 400 200 200 | ./philogramm 20 -i -s -c -f
 ```
-
-## Install
-
-```bash
-curl -o philogramm https://raw.githubusercontent.com/sugoidesune/42philogramm/master/philogramm
-
-chmod 755 philogramm
-
-./philo 6 400 200 200 5 | ./philogramm
-```
----
-
-
