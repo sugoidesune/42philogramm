@@ -1,6 +1,52 @@
-// ...existing code...
-// ...existing code...
+#include <stdio.h>
+#include <stdarg.h>
+// Global variable to track visible chars printed per line
+int current_line_chars = 0;
+// Helper: print visible char and increment counter
+void tracked_putchar(char c) {
+    putchar(c);
+    if ((unsigned char)c >= 32 && c != 127) current_line_chars++;
+}
 
+// Helper: print visible string and increment counter
+void tracked_puts(const char *s) {
+    int in_escape = 0;
+    for (const char *p = s; *p; ++p) {
+        putchar(*p);
+        if (!in_escape && *p == '\033') {
+            in_escape = 1;
+            continue;
+        }
+        if (in_escape) {
+            if (*p == 'm') in_escape = 0;
+            continue;
+        }
+        if ((unsigned char)*p >= 32 && *p != 127) current_line_chars++;
+    }
+}
+
+// Helper: print formatted string and increment counter (excluding color codes)
+void tracked_printf(const char *fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    char buf[512];
+    int n = vsnprintf(buf, sizeof(buf), fmt, args);
+    va_end(args);
+    // Print all characters, but only count visible ones
+    int in_escape = 0;
+    for (int i = 0; i < n; ++i) {
+        putchar(buf[i]);
+        if (!in_escape && buf[i] == '\033') {
+            in_escape = 1;
+            continue;
+        }
+        if (in_escape) {
+            if (buf[i] == 'm') in_escape = 0;
+            continue;
+        }
+        if ((unsigned char)buf[i] >= 32 && buf[i] != 127) current_line_chars++;
+    }
+}
 
 #include "philogramm.h"
 int RESOLUTION = 10;
@@ -11,6 +57,7 @@ bool SHOW_EATCOUNT = true;
 int MAX_BAR_CHARS = 100;
 
 int calc_eatcount_spacing(Philosopher *p, int max_bar_chars, int resolution) {
+    max_bar_chars--;
     int first_action_start = (p->action_count > 0) ? p->actions[0].start : 0;
     int row_chars = 0;
     row_chars += first_action_start / resolution;
@@ -31,7 +78,7 @@ int calc_eatcount_spacing(Philosopher *p, int max_bar_chars, int resolution) {
             // Account for death message width instead of bar
             // Format: "%4dms 🕱  " (4 digits, ms, emoji, 2 spaces)
             // Example: " 1234ms 🕱  " = 10 chars (excluding color codes)
-            row_chars += 8;
+            row_chars +=7;
             continue;
         }
         if (duration <= short_bar_limit) {
@@ -105,6 +152,14 @@ void add_action(Philosopher *p, int time, ActionType type) {
         p->eat_count++;
     }
     if (type == NONE) return;
+    // If the last action has the same timestamp, replace it
+    if (p->action_count > 0 && p->actions[p->action_count - 1].start == time) {
+        // Replace the last action with the new one
+        p->actions[p->action_count - 1].type = type;
+        p->last_type = type;
+        p->last_time = time;
+        return;
+    }
     if (p->last_type != NONE && p->last_type != type) {
         // End previous action
         if (p->action_count < MAX_ACTIONS) {
@@ -131,6 +186,7 @@ void finalize_actions(Philosopher *p) {
 }
 
 void print_chart(Philosopher *p, int max_bar_chars) {
+    (void)max_bar_chars; // Suppress unused parameter warning
     int id = p->id;
     char prefix[4] = "";
     if (id < 10)
@@ -138,11 +194,12 @@ void print_chart(Philosopher *p, int max_bar_chars) {
     else if (id < 100)
         strcpy(prefix, " ");
     // Print prefix, number, colon, and space all on dark grey background, then reset
-    printf("%s\033[1m%d: \033[0m", prefix, id);
+    current_line_chars = 0;
+    tracked_printf("%s\033[1m%d: \033[0m", prefix, id);
     int first_action_start = (p->action_count > 0) ? p->actions[0].start : 0;
     if (first_action_start > 0) {
         int dots = first_action_start / RESOLUTION;
-        for (int d = 0; d < dots; d++) putchar('.');
+        for (int d = 0; d < dots; d++) tracked_putchar('.');
     }
 
     // Helper: detect if last action is zero-duration and not DEAD
@@ -158,20 +215,25 @@ void print_chart(Philosopher *p, int max_bar_chars) {
     }
 
 
+    int unfinished_idx = -1;
     for (int i = 0; i < p->action_count; i++) {
         Action *a = &p->actions[i];
         int duration = (a->end > a->start) ? (a->end - a->start) : 0;
-        // ...existing code...
         if (IGNORE_SHORT_ACTIONS && duration > 0 && duration <= 3) {
             continue;
         }
         if (a->type == DEAD) {
             int died_time = a->start;
-            printf("%s%4dms 🕱  %s", action_color(DEAD), died_time, COLOR_RESET);
+            tracked_printf("%s%4dms 🕱  %s", action_color(DEAD), died_time, COLOR_RESET);
+            continue;
+        }
+        if (duration == 0 && i == p->action_count - 1 && a->type != DEAD) {
+            // Save index of last unfinished action to print after loop
+            unfinished_idx = i;
             continue;
         }
         if (duration == 0) {
-            printf("%s   %s", action_color(a->type), COLOR_RESET);
+            // Skip zero-duration actions (except DEAD, handled above)
             continue;
         }
         char duration_str[16];
@@ -184,9 +246,9 @@ void print_chart(Philosopher *p, int max_bar_chars) {
             if (max_chars < 1) max_chars = 1;
             if (max_chars > len) max_chars = len;
             const char *bg_color = action_color(a->type);
-            printf("%s", bg_color);
-            for (int c = 0; c < max_chars; c++) putchar(duration_str[c]);
-            printf("%s", COLOR_RESET);
+            tracked_puts(bg_color);
+            for (int c = 0; c < max_chars; c++) tracked_putchar(duration_str[c]);
+            tracked_puts(COLOR_RESET);
             continue;
         }
         int bar_width = rounded_duration / RESOLUTION;
@@ -200,16 +262,32 @@ void print_chart(Philosopher *p, int max_bar_chars) {
         if (start + copy_len > bar_width) copy_len = bar_width - start;
         memcpy(bar + start, duration_str, copy_len);
         const char *bg_color = action_color(a->type);
-        printf("%s%s%s", bg_color, bar, COLOR_RESET);
+        tracked_puts(bg_color);
+        tracked_puts(bar);
+        tracked_puts(COLOR_RESET);
     }
-    // Calculate spacing for eat count block
+
+    // Print the last unfinished action if it exists
+    if (unfinished_idx != -1) {
+        Action *a = &p->actions[unfinished_idx];
+        const char *bg_color = action_color(a->type);
+        tracked_puts(bg_color);
+        for (int c = 0; c < 4; c++) tracked_putchar(' ');
+        tracked_puts(COLOR_RESET);
+    }
+    // Calculate spacing for eat count block using current_line_chars
     if (SHOW_EATCOUNT) {
-        int spacing = calc_eatcount_spacing(p, max_bar_chars, RESOLUTION);
-        for (int s = 0; s < spacing; s++) printf("\033[38;5;240m┈\033[0m");
-        printf("┤ ate %d times %s│\n", p->eat_count, p->eat_count > 9 ? "" : " ");
+        // /printf("wr %d,  %d", current_line_chars, MAX_BAR_CHARS);
+        int spaces_needed = MAX_BAR_CHARS + 7 - current_line_chars;
+        spaces_needed = calc_eatcount_spacing(p, MAX_BAR_CHARS, RESOLUTION);
+        if (spaces_needed < 0) spaces_needed = 0;
+    for (int i = 0; i < spaces_needed; i++) tracked_puts("\033[38;5;240m┈\033[0m");
+        tracked_printf("┤ ate %d times %s│", p->eat_count, p->eat_count > 9 ? "" : " ");
+        tracked_puts("\n");
     } else {
-        putchar('\n');
+        tracked_putchar('\n');
     }
+    current_line_chars = 0;
 }
 
 void print_death_msg(int ms) {
@@ -378,12 +456,20 @@ int main(int argc, char **argv) {
             for (int i = 0; i < MAX_BAR_CHARS - 1; i++) putchar(' ');
             printf("    ╭──────────────╮\n");
         }
-    // Print charts in sorted order
+    // Print chart and fork rows in interleaved order
+    // Print the last fork row before the first philosopher
+    if (LOG_FORKS && philo_count > 1) {
+        print_fork_row(philos, philo_count, philo_count - 1);
+    }
     for (int i = 0; i < philo_count; i++) {
         print_chart(&philos[i], MAX_BAR_CHARS);
-        if (LOG_FORKS) {
-            print_fork_log(&philos[i]);
+        if (LOG_FORKS && i < philo_count - 1) {
+            print_fork_row(philos, philo_count, i);
         }
+    }
+    // Print the last fork row again after the last philosopher
+    if (LOG_FORKS && philo_count > 1) {
+        print_fork_row(philos, philo_count, philo_count - 1);
     }
         // Print bottom border for 'ate X times' messages if enabled
         if (SHOW_EATCOUNT) {

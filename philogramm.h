@@ -65,7 +65,7 @@ typedef struct {
 
 void print_help_message(void);
 const char* action_color(ActionType type);
-void print_fork_log(Philosopher *p);
+void print_fork_row(Philosopher *philos, int philo_count, int fork_idx);
 void print_scale(int max_bar_chars, int resolution);
 int calc_max_bar_chars(Philosopher philos[], int philo_count, int resolution);
 void print_chart(Philosopher *p, int max_bar_chars);

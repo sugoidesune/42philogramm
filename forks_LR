@@ -28,13 +28,13 @@
 501 1 is eating
 601 4 is sleeping
 601 5 is thinking
-601 5 has taken a fork left
+601 5 has taken a fork right
 601 3 has taken a fork left
 601 3 has taken a fork right
 601 3 is eating
 701 2 is thinking
 701 1 is sleeping
-701 5 has taken a fork right
+701 5 has taken a fork left
 701 5 is eating
 801 4 is thinking
 801 3 is sleeping
