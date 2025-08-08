@@ -75,11 +75,11 @@ void print_help_message(void) {
 
     // Example usage segment
     printf("Example usage:\n");
-    printf("  ./philo 6 400 200 200 5 | ./visualize\n");
-    printf("  ./philo 6 400 200 200 | head -n 50 | ./visualize\n");
-    printf("  cat philo_output | ./visualize\n");
-    printf("  cat philo_output | ./visualize 20 -i\n");
-    printf("  ./philo 6 400 200 200 | ./visualize 20 -i -s -c -f\n");
+    printf("  ./philo 6 400 200 200 5 | ./philogramm\n");
+    printf("  ./philo 6 400 200 200 | head -n 50 | ./philogramm\n");
+    printf("  cat philo_output | ./philogramm\n");
+    printf("  cat philo_output | ./philogramm 20 -i\n");
+    printf("  ./philo 6 400 200 200 | ./philogramm 20 -i -s -c -f\n");
     printf("\n");
 }
 
