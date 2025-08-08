@@ -14,26 +14,27 @@ void print_fork_log(Philosopher *p) {
     extern int RESOLUTION;
     extern bool SHOW_EATCOUNT;
 
-    int arrow_cols[MAX_ACTIONS] = {0};
-    int arrow_count = 0;
-    for (int f = 0; f < p->fork_count; f++) {
-        int arrow_pos = p->fork_times[f] / RESOLUTION;
-        if (arrow_pos < MAX_BAR_CHARS) {
-            arrow_cols[arrow_count++] = arrow_pos;
-        }
-    }
+    // For each column, print the correct arrow (with color) if a fork was picked up at that time
     int col = 0;
-    int fork_row_width = 0; // Count of characters written (arrows and spaces)
+    int fork_row_width = 0;
     while (col < MAX_BAR_CHARS) {
-        int arrows_here = 0;
-        for (int a = 0; a < arrow_count; a++) {
-            if (arrow_cols[a] == col) arrows_here++;
+        int found = 0;
+        for (int f = 0; f < p->fork_count; f++) {
+            int arrow_pos = p->fork_times[f] / RESOLUTION;
+            if (arrow_pos == col) {
+                // Print colored arrow based on fork side
+                if (p->fork_sides[f] == FORK_LEFT) {
+                    printf(FORK_LEFT_COLOR "↑" COLOR_RESET); // blue for left
+                } else if (p->fork_sides[f] == FORK_RIGHT) {
+                    printf(FORK_RIGHT_COLOR "↑" COLOR_RESET); // magenta for right
+                } else {
+                    printf(FORK_UNKNOWN_COLOR "↑" COLOR_RESET); // default color
+                }
+                fork_row_width++;
+                found = 1;
+            }
         }
-        for (int k = 0; k < arrows_here; k++) {
-            printf("↑");
-            fork_row_width++;
-        }
-        if (!arrows_here) {
+        if (!found) {
             printf(" ");
             fork_row_width++;
         }

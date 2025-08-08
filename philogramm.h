@@ -30,6 +30,11 @@ extern int MAX_BAR_CHARS;
 #define COLOR_THINK   "\033[1;32m"
 #define COLOR_RESET   "\033[0m"
 
+// Fork arrow colors
+#define FORK_LEFT_COLOR   "\033[1;33m" // yellow (as orange substitute)
+#define FORK_RIGHT_COLOR  "\033[38;5;49m"  // teal (xterm 49)
+#define FORK_UNKNOWN_COLOR "\033[1m"   // bold (default)
+
 // Action types
 typedef enum { EAT, SLEEP, THINK, DEAD, NONE } ActionType;
 
@@ -39,6 +44,9 @@ typedef struct {
     int end;
     ActionType type;
 } Action;
+
+
+typedef enum { FORK_NONE = 0, FORK_LEFT, FORK_RIGHT } ForkSide;
 
 // Philosopher struct
 typedef struct {
@@ -51,6 +59,7 @@ typedef struct {
     int last_eat_time; // -1 if never ate
     int fork_count;
     int fork_times[MAX_ACTIONS]; // times when forks were picked up
+    ForkSide fork_sides[MAX_ACTIONS]; // left/right/none for each fork pickup
     int eat_count; // number of times philosopher ate
 } Philosopher;
 

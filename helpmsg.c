@@ -32,6 +32,16 @@ void print_help_message(void) {
     printf("           \033[1m Philosophers last action. ─╯\033[0m\n");
     printf("\n");
 
+    // Example bar for philosopher 3 (forks demo)
+    printf("  \033[1m3\033[0m: ");
+    printf("%s       90ms       %s", action_color(THINK), COLOR_RESET);
+    printf("%s    70ms    %s", action_color(EAT), COLOR_RESET);
+    printf("%s    60ms    %s", action_color(SLEEP), COLOR_RESET);
+    printf("\n");
+    printf("        " FORK_LEFT_COLOR "↑" COLOR_RESET "             " FORK_RIGHT_COLOR "↑" COLOR_RESET "              " FORK_UNKNOWN_COLOR "↑" COLOR_RESET "\n");
+    printf("        left fork     right fork     a fork\n");
+    printf("\n");
+
     // Options box (same style as legend)
     printf("     \033[1mOptions\033[0m                                 \n");
     printf("     ┌───────────────┬────────────────────────────────────────────────┐\n");
