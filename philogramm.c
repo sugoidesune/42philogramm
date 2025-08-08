@@ -55,6 +55,7 @@ Philosopher* find_or_create_philo(Philosopher philos[], int *count, int id) {
     p->last_eat_time = -1;
     p->fork_count = 0;
     memset(p->fork_times, 0, sizeof(p->fork_times));
+    memset(p->fork_sides, 0, sizeof(p->fork_sides)); // init fork sides
     p->eat_count = 0;
     (*count)++;
     return p;
@@ -218,20 +219,26 @@ void print_meal_msg(int ms) {
 void process_line(char *line, Philosopher philos[], int *philo_count) {
     int time, id;
     char action_str[MAX_LINE];
-    if (sscanf(line, "%d %d %[^\n]", &time, &id, action_str) == 3) {
+    if (sscanf(line, "%d %d %[^\n]", &time, &id, action_str) == 3) { // fix pattern to capture rest of line
         ActionType type = parse_action(action_str);
         Philosopher *p = find_or_create_philo(philos, philo_count, id);
         add_action(p, time, type);
-            // Track death time for log window
-            if (type == DEAD) {
-                p->died_time = time;
-            }
-            // Track fork pickup times if LOG_FORKS is enabled and action contains "fork"
-            if (LOG_FORKS && strstr(action_str, "fork")) {
-                if (p->fork_count < MAX_ACTIONS) {
-                    p->fork_times[p->fork_count++] = time;
+        if (type == DEAD) {
+            p->died_time = time;
+        }
+        if (LOG_FORKS && strstr(action_str, "fork")) {
+            if (p->fork_count < MAX_ACTIONS) {
+                p->fork_times[p->fork_count] = time;
+                ForkSide side = FORK_NONE;
+                if (strstr(action_str, "left")) {
+                    side = FORK_LEFT;
+                } else if (strstr(action_str, "right")) {
+                    side = FORK_RIGHT;
                 }
+                p->fork_sides[p->fork_count] = side;
+                p->fork_count++;
             }
+        }
     }
 }
 
