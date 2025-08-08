@@ -23,11 +23,18 @@ Each bar shows a philosopher's actions over time, with colors indicating the act
 	┌───────────────────────── Fork Chart ──────────────────────────┐
 	│  Forks are shown as arrows between each philosopher           │
 	│  pointing to the philosopher who picked them up.              │
-	│  ⚠️  Important: Needs 'left' or 'right' in fork print message  │
+	│                                                               │
 	└───────────────────────────────────────────────────────────────┘
 ```
 
 ![Fork Example](/help/forkhelp.png)
+
+⚠️  Important: Needs 'left' or 'right' in fork print message
+```
+601 5 has taken a fork right 
+601 3 has taken left fork 
+```
+The location of "left" / "right" in the string section doesn't matter.
 ---
 
 ## Options

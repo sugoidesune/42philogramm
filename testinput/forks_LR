@@ -1,10 +1,12 @@
-0 1 has taken a fork left
-0 1 has taken a fork right
+0 1 has taken a left fork
+0 1 has taken a right fork
 0 1 is eating
 0 2 is thinking
 0 3 is thinking
 0 4 is thinking
 0 5 is thinking
+50 1 has taken a fork right
+50 1 has taken a fork left
 100 3 has taken a fork right
 100 3 has taken a fork left
 100 3 is eating
