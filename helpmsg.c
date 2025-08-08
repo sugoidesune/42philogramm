@@ -39,6 +39,9 @@ void print_help_message(void) {
     printf("     │               │ 5, 10, 20, 40 (default: 10)                    │\n");
     printf("     │               │                                                │\n");
     printf("     │  -i           │ Ignore actions of 3ms or less in chart output  │\n");
+    printf("     │  -f           │ Turn on the fork chart                        │\n");
+    printf("     │  -c           │ Turn off the eat count                        │\n");
+    printf("     │  -s           │ Turn off the scale                            │\n");
     printf("     └───────────────┴────────────────────────────────────────────────┘\n");
     printf("\n");
 

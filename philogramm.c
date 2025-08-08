@@ -14,6 +14,11 @@ int calc_eatcount_spacing(Philosopher *p, int max_bar_chars, int resolution) {
     int first_action_start = (p->action_count > 0) ? p->actions[0].start : 0;
     int row_chars = 0;
     row_chars += first_action_start / resolution;
+    int last_action_idx = p->action_count - 1;
+    int is_dead = 0;
+    if (last_action_idx >= 0 && p->actions[last_action_idx].type == DEAD) {
+        is_dead = 1;
+    }
     for (int j = 0; j < p->action_count; j++) {
         int duration = (p->actions[j].end > p->actions[j].start) ? (p->actions[j].end - p->actions[j].start) : 0;
         int rounded_duration = ((duration + resolution / 2) / resolution) * resolution;
@@ -22,6 +27,13 @@ int calc_eatcount_spacing(Philosopher *p, int max_bar_chars, int resolution) {
         snprintf(duration_str, sizeof(duration_str), "%dms", duration);
         len = strlen(duration_str);
         int short_bar_limit = resolution * len;
+        if (p->actions[j].type == DEAD) {
+            // Account for death message width instead of bar
+            // Format: "%4dms 🕱  " (4 digits, ms, emoji, 2 spaces)
+            // Example: " 1234ms 🕱  " = 10 chars (excluding color codes)
+            row_chars += 8;
+            continue;
+        }
         if (duration <= short_bar_limit) {
             int max_chars = (rounded_duration / resolution);
             if (max_chars < 1) max_chars = 1;
